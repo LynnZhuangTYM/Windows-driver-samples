@@ -1,11 +1,11 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by SwapAPODll.rc
+// Used by FlowEngineAPODll.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_SWAPAPODLL                  101
-#define IDR_SWAPAPOMFX                  110
-#define IDR_SWAPAPOSFX                  111
+#define IDR_FlowEngineAPODLL                  101
+#define IDR_FlowEngineAPOMFX                  110
+#define IDR_FlowEngineAPOSFX                  111
 #define IDI_EFFECT_ICON                 200
 
 // Next default values for new objects

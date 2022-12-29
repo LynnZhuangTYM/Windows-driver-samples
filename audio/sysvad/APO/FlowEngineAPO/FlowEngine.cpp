@@ -1,9 +1,9 @@
 //
-// Swap.cpp -- Copyright (c) Microsoft Corporation. All rights reserved.
+// FlowEngine.cpp -- Copyright (c) Microsoft Corporation. All rights reserved.
 //
 // Description:
 //
-//  Implementation of SwapSamples
+//  Implementation of FlowEngineSamples
 //
 #include <atlbase.h>
 #include <atlcom.h>
@@ -17,7 +17,7 @@
 
 #include <float.h>
 
-#include "SwapAPO.h"
+#include "FlowEngineAPO.h"
 
 #pragma AVRT_CODE_BEGIN
 void WriteSilence(
@@ -44,14 +44,14 @@ void CopyFrames(
 #pragma AVRT_CODE_END
 
 #pragma AVRT_CODE_BEGIN
-void ProcessSwap(
+void ProcessFlowEngine(
     FLOAT32 *pf32OutputFrames,
     const FLOAT32 *pf32InputFrames,
     UINT32   u32ValidFrameCount,
     UINT32   u32SamplesPerFrame )
 {
     UINT32   u32SampleIndex;
-    FLOAT32  fSwap32;
+    FLOAT32  fFlowEngine32;
 
     ASSERT_REALTIME();
     ATLASSERT( IS_VALID_TYPED_READ_POINTER(pf32InputFrames) );
@@ -62,11 +62,11 @@ void ProcessSwap(
     {
         for (u32SampleIndex=0; u32SampleIndex+1<u32SamplesPerFrame; u32SampleIndex += 2)
         {
-            // apply swap
-            fSwap32 = *pf32InputFrames;
+            // apply FlowEngine
+            fFlowEngine32 = *pf32InputFrames;
             *pf32OutputFrames = *(pf32InputFrames + 1);
             pf32OutputFrames++;
-            *pf32OutputFrames = fSwap32;
+            *pf32OutputFrames = fFlowEngine32;
             pf32OutputFrames++;
             pf32InputFrames += 2;
         }
@@ -76,7 +76,7 @@ void ProcessSwap(
 
 
 #pragma AVRT_CODE_BEGIN
-void ProcessSwapScale(
+void ProcessFlowEngineScale(
     FLOAT32 *pf32OutputFrames,
     const FLOAT32 *pf32InputFrames,
     UINT32   u32ValidFrameCount,
@@ -84,7 +84,7 @@ void ProcessSwapScale(
     FLOAT32  *pf32Coefficients )
 {
     UINT32   u32SampleIndex;
-    FLOAT32  fSwap32;
+    FLOAT32  fFlowEngine32;
 
     ASSERT_REALTIME();
     ATLASSERT( IS_VALID_TYPED_READ_POINTER(pf32InputFrames) );
@@ -95,16 +95,16 @@ void ProcessSwapScale(
     {
         for (u32SampleIndex=0; u32SampleIndex+1<u32SamplesPerFrame; u32SampleIndex += 2)
         {
-            // apply swap for each stereo pair and scale
+            // apply FlowEngine for each stereo pair and scale
 
             // save left channel
-            fSwap32 = *pf32InputFrames;
+            fFlowEngine32 = *pf32InputFrames;
             // left output equals right input times 1st coefficient
             *pf32OutputFrames = *(pf32InputFrames + 1) * pf32Coefficients[u32SampleIndex];
             pf32OutputFrames++;
             
             // right output equals left input times 2nd coefficient
-            *pf32OutputFrames = fSwap32  * pf32Coefficients[u32SampleIndex+1];      
+            *pf32OutputFrames = fFlowEngine32  * pf32Coefficients[u32SampleIndex+1];      
             pf32OutputFrames++;
 
             pf32InputFrames += 2;

@@ -1555,7 +1555,7 @@ CMiniportWaveRT::EvtFormatChangeHandler
     {
         if (This->m_DeviceType == eBthHfpMicDevice)
         {
-            // swap the device formats and modes for bt
+            // FlowEngine the device formats and modes for bt
             This->AcquireFormatsAndModesLock();
 
             This->m_DeviceFormatsAndModes = This->m_pSidebandDevice->GetFormatsAndModes(This->m_DeviceType);
@@ -1572,7 +1572,7 @@ CMiniportWaveRT::EvtFormatChangeHandler
         }
         else if(This->m_DeviceType == eBthHfpSpeakerDevice)
         {
-            // swap the device formats and modes for bt
+            // FlowEngine the device formats and modes for bt
             This->AcquireFormatsAndModesLock();
 
             This->m_DeviceFormatsAndModes = This->m_pSidebandDevice->GetFormatsAndModes(This->m_DeviceType);

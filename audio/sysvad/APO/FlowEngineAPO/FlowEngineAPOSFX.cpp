@@ -1,9 +1,9 @@
 //
-// SwapAPOSFX.cpp -- Copyright (c) Microsoft Corporation. All rights reserved.
+// FlowEngineAPOSFX.cpp -- Copyright (c) Microsoft Corporation. All rights reserved.
 //
 // Description:
 //
-//  Implementation of CSwapAPOSFX
+//  Implementation of CFlowEngineAPOSFX
 //
 
 #include <atlbase.h>
@@ -18,7 +18,7 @@
 
 #include <float.h>
 
-#include "SwapAPO.h"
+#include "FlowEngineAPO.h"
 #include <devicetopology.h>
 #include <CustomPropKeys.h>
 
@@ -28,13 +28,13 @@
 // number of IIDs supported by this APO.  If more than one, then additional
 // IIDs are added at the end
 #pragma warning (disable : 4815)
-const AVRT_DATA CRegAPOProperties<1> CSwapAPOSFX::sm_RegProperties(
-    __uuidof(SwapAPOSFX),                           // clsid of this APO
-    L"CSwapAPOSFX",                                 // friendly name of this APO
+const AVRT_DATA CRegAPOProperties<1> CFlowEngineAPOSFX::sm_RegProperties(
+    __uuidof(FlowEngineAPOSFX),                           // clsid of this APO
+    L"CFlowEngineAPOSFX",                                 // friendly name of this APO
     L"Copyright (c) Microsoft Corporation",         // copyright info
     1,                                              // major version #
     0,                                              // minor version #
-    __uuidof(ISwapAPOSFX)                           // iid of primary interface
+    __uuidof(IFlowEngineAPOSFX)                           // iid of primary interface
 
 //
 // If you need to change any of these attributes, uncomment everything up to
@@ -73,7 +73,7 @@ const AVRT_DATA CRegAPOProperties<1> CSwapAPOSFX::sm_RegProperties(
 //  object.  This routine can not fail and can not block, or call any other
 //  routine that blocks, or touch pagable memory.
 //
-STDMETHODIMP_(void) CSwapAPOSFX::APOProcess(
+STDMETHODIMP_(void) CFlowEngineAPOSFX::APOProcess(
     UINT32 u32NumInputConnections,
     APO_CONNECTION_PROPERTY** ppInputConnections,
     UINT32 u32NumOutputConnections,
@@ -118,13 +118,13 @@ STDMETHODIMP_(void) CSwapAPOSFX::APOProcess(
                               GetSamplesPerFrame() );
             }
 
-            // swap the input buffer in-place
+            // FlowEngine the input buffer in-place
             if (
                 !IsEqualGUID(m_AudioProcessingMode, AUDIO_SIGNALPROCESSINGMODE_RAW) &&
-                m_fEnableSwapSFX
+                m_fEnableFlowEngineSFX
             )
             {
-                ProcessSwap(pf32InputFrames, pf32InputFrames,
+                ProcessFlowEngine(pf32InputFrames, pf32InputFrames,
                             ppInputConnections[0]->u32ValidFrameCount,
                             m_u32SamplesPerFrame);
             }
@@ -169,7 +169,7 @@ STDMETHODIMP_(void) CSwapAPOSFX::APOProcess(
 // Return values:
 //
 //      S_OK on success, a failure code on failure
-STDMETHODIMP CSwapAPOSFX::GetLatency(HNSTIME* pTime)  
+STDMETHODIMP CFlowEngineAPOSFX::GetLatency(HNSTIME* pTime)  
 {  
     ASSERT_NONREALTIME();  
     HRESULT hr = S_OK;  
@@ -201,7 +201,7 @@ Exit:
 //      APOERR_INVALID_CONNECTION_FORMAT    Invalid connection format.
 //      APOERR_NUM_CONNECTIONS_INVALID      Number of input or output connections is not valid on
 //                                          this APO.
-STDMETHODIMP CSwapAPOSFX::LockForProcess(UINT32 u32NumInputConnections,
+STDMETHODIMP CFlowEngineAPOSFX::LockForProcess(UINT32 u32NumInputConnections,
     APO_CONNECTION_DESCRIPTOR** ppInputConnections,  
     UINT32 u32NumOutputConnections, APO_CONNECTION_DESCRIPTOR** ppOutputConnections)
 {
@@ -278,7 +278,7 @@ Exit:
 //  Note: This method may not be called from a real-time processing thread.
 //
 
-HRESULT CSwapAPOSFX::Initialize(UINT32 cbDataSize, BYTE* pbyData)
+HRESULT CFlowEngineAPOSFX::Initialize(UINT32 cbDataSize, BYTE* pbyData)
 {
     HRESULT                     hr = S_OK;
     CComPtr<IMMDevice>	        spMyDevice;
@@ -366,7 +366,7 @@ HRESULT CSwapAPOSFX::Initialize(UINT32 cbDataSize, BYTE* pbyData)
     //
     if (m_spAPOSystemEffectsProperties != NULL)
     {
-        m_fEnableSwapSFX = GetCurrentEffectsSetting(m_spAPOSystemEffectsProperties, PKEY_Endpoint_Enable_Channel_Swap_SFX, m_AudioProcessingMode);
+        m_fEnableFlowEngineSFX = GetCurrentEffectsSetting(m_spAPOSystemEffectsProperties, PKEY_Endpoint_Enable_Channel_FlowEngine_SFX, m_AudioProcessingMode);
     }
 
     //
@@ -416,7 +416,7 @@ Exit:
 //  If there are no effects then the function still succeeds, ppEffectsIds
 //  returns a NULL pointer, and pcEffects returns a count of 0.
 //
-STDMETHODIMP CSwapAPOSFX::GetEffectsList(_Outptr_result_buffer_maybenull_(*pcEffects) LPGUID *ppEffectsIds, _Out_ UINT *pcEffects, _In_ HANDLE Event)
+STDMETHODIMP CFlowEngineAPOSFX::GetEffectsList(_Outptr_result_buffer_maybenull_(*pcEffects) LPGUID *ppEffectsIds, _Out_ UINT *pcEffects, _In_ HANDLE Event)
 {
     HRESULT hr;
     BOOL effectsLocked = FALSE;
@@ -456,7 +456,7 @@ STDMETHODIMP CSwapAPOSFX::GetEffectsList(_Outptr_result_buffer_maybenull_(*pcEff
         
         EffectControl list[] =
         {
-            { SwapEffectId,  m_fEnableSwapSFX  },
+            { FlowEngineEffectId,  m_fEnableFlowEngineSFX  },
         };
     
         if (!IsEqualGUID(m_AudioProcessingMode, AUDIO_SIGNALPROCESSINGMODE_RAW))
@@ -526,7 +526,7 @@ Exit:
 // Remarks:
 //
 //
-HRESULT CSwapAPOSFX::OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPERTYKEY key)
+HRESULT CFlowEngineAPOSFX::OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPERTYKEY key)
 {
     HRESULT     hr = S_OK;
 
@@ -538,7 +538,7 @@ HRESULT CSwapAPOSFX::OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPERT
     }
 
     // If either the master disable or our APO's enable properties changed...
-    if (PK_EQUAL(key, PKEY_Endpoint_Enable_Channel_Swap_SFX) ||
+    if (PK_EQUAL(key, PKEY_Endpoint_Enable_Channel_FlowEngine_SFX) ||
         PK_EQUAL(key, PKEY_AudioEndpoint_Disable_SysFx))
     {
         LONG nChanges = 0;
@@ -554,7 +554,7 @@ HRESULT CSwapAPOSFX::OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPERT
         
         KeyControl controls[] =
         {
-            { PKEY_Endpoint_Enable_Channel_Swap_SFX, &m_fEnableSwapSFX  },
+            { PKEY_Endpoint_Enable_Channel_FlowEngine_SFX, &m_fEnableFlowEngineSFX  },
         };
         
         for (int i = 0; i < ARRAYSIZE(controls); i++)
@@ -562,10 +562,10 @@ HRESULT CSwapAPOSFX::OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPERT
             LONG fOldValue;
             LONG fNewValue = true;
             
-            // Get the state of whether channel swap MFX is enabled or not
+            // Get the state of whether channel FlowEngine MFX is enabled or not
             fNewValue = GetCurrentEffectsSetting(m_spAPOSystemEffectsProperties, controls[i].key, m_AudioProcessingMode);
 
-            // Swap in the new setting
+            // FlowEngine in the new setting
             fOldValue = InterlockedExchange(controls[i].value, fNewValue);
             
             if (fNewValue != fOldValue)
@@ -606,7 +606,7 @@ HRESULT CSwapAPOSFX::OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPERT
 //
 //      This method may not be called from a real-time processing thread.
 //
-CSwapAPOSFX::~CSwapAPOSFX(void)
+CFlowEngineAPOSFX::~CFlowEngineAPOSFX(void)
 {
     //
     // unregister for callbacks
@@ -620,4 +620,4 @@ CSwapAPOSFX::~CSwapAPOSFX(void)
     {
         CloseHandle(m_hEffectsChangedEvent);
     }
-} // ~CSwapAPOSFX
+} // ~CFlowEngineAPOSFX

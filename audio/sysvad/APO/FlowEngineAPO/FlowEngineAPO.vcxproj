@@ -34,6 +34,8 @@
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Platform Condition="'$(Platform)' == ''">Win32</Platform>
     <SampleGuid>{D5CCDCB1-348E-414E-BB0F-33C773760034}</SampleGuid>
+    <ProjectName>FlowEngineAPO</ProjectName>
+    <WindowsTargetPlatformVersion>$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,7 +122,7 @@
     <TargetName>SwapAPO</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>SwapAPO</TargetName>
+    <TargetName>FlowEngineAPO</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <TargetName>SwapAPO</TargetName>
@@ -278,7 +280,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies);Kernel32.lib;ole32.lib;oleaut32.lib;advapi32.lib;user32.lib;uuid.lib;AudioBaseProcessingObjectV140.lib;audiomediatypecrt.lib;AudioEng.lib</AdditionalDependencies>
-      <ModuleDefinitionFile>SwapAPODll.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>FlowEngineAPODll.def</ModuleDefinitionFile>
       <AdditionalOptions>/ignore:4217,4049 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -406,13 +408,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Swap.cpp" />
-    <ClCompile Include="SwapAPODll.cpp" />
-    <ClCompile Include="SwapAPOMFX.cpp" />
-    <ClCompile Include="SwapAPOSFX.cpp" />
-    <Midl Include="SwapAPODll.idl" />
-    <Midl Include="SwapAPOInterface.idl" />
-    <ResourceCompile Include="SwapAPODll.rc" />
+    <ClCompile Include="FlowEngine.cpp" />
+    <ClCompile Include="FlowEngineAPODll.cpp" />
+    <ClCompile Include="FlowEngineAPOMFX.cpp" />
+    <ClCompile Include="FlowEngineAPOSFX.cpp" />
+    <Midl Include="FlowEngineAPODll.idl" />
+    <Midl Include="FlowEngineAPOInterface.idl" />
+    <ResourceCompile Include="FlowEngineAPODll.rc" />
   </ItemGroup>
   <ItemGroup>
     <Inf Exclude="@(Inf)" Include="*.inf" />
@@ -421,10 +423,10 @@
   <ItemGroup>
     <None Exclude="@(None)" Include="*.txt;*.htm;*.html" />
     <None Exclude="@(None)" Include="*.ico;*.cur;*.bmp;*.dlg;*.rct;*.gif;*.jpg;*.jpeg;*.wav;*.jpe;*.tiff;*.tif;*.png;*.rc2" />
-    <None Exclude="@(None)" Include="*.def;*.bat;*.hpj;*.asmx" />
+    <None Exclude="@(None)" Include="FlowEngineAPODll.def" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Exclude="@(ClInclude)" Include="*.h;*.hpp;*.hxx;*.hm;*.inl;*.xsd" />
+    <ClInclude Exclude="@(ClInclude)" Include="FlowEngineAPO.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

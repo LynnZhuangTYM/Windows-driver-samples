@@ -30,9 +30,6 @@
     <ProjectReference Include="..\KeywordDetectorAdapter\KeywordDetectorContosoAdapter.vcxproj">
       <Project>{E0F02048-78A4-4FE8-B863-66E6CB6A2C37}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\APO\SwapAPO\SwapAPO.vcxproj">
-      <Project>{691F1D0F-CA50-46CD-8BBA-A59E9E8EB601}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\APO\DelayAPO\DelayAPO.vcxproj">
       <Project>{8851AB85-70B3-4798-A149-BA366DF9EC25}</Project>
     </ProjectReference>
@@ -124,7 +121,7 @@
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
     </DriverSign>
   </ItemDefinitionGroup>
-    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
     </DriverSign>

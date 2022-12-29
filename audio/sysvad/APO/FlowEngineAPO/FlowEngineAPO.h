@@ -1,17 +1,17 @@
 //
-// SwapAPO.h -- Copyright (c) Microsoft Corporation. All rights reserved.
+// FlowEngineAPO.h -- Copyright (c) Microsoft Corporation. All rights reserved.
 //
 // Description:
 //
-//   Declaration of the CSwapAPO class.
+//   Declaration of the CFlowEngineAPO class.
 //
 
 #pragma once
 
 #include <audioenginebaseapo.h>
 #include <BaseAudioProcessingObject.h>
-#include <SwapAPOInterface.h>
-#include <SwapAPODll.h>
+#include <FlowEngineAPOInterface.h>
+#include <FlowEngineAPODll.h>
 
 #include <commonmacros.h>
 #include <devicetopology.h>
@@ -28,40 +28,40 @@ _Analysis_mode_(_Analysis_code_type_user_driver_)
 // truly very different from all predefined types of effects.
 //
 // {B8EC75BA-00ED-434C-A732-064A0F00788E}
-DEFINE_GUID(SwapEffectId,       0xb8ec75ba, 0x00ed, 0x434c, 0xa7, 0x32, 0x06, 0x4a, 0x0f, 0x00, 0x78, 0x8e);
+DEFINE_GUID(FlowEngineEffectId,       0xb8ec75ba, 0x00ed, 0x434c, 0xa7, 0x32, 0x06, 0x4a, 0x0f, 0x00, 0x78, 0x8e);
 
 LONG GetCurrentEffectsSetting(IPropertyStore* properties, PROPERTYKEY pkeyEnable, GUID processingMode);
 
 #pragma AVRT_VTABLES_BEGIN
-// Swap APO class - MFX
-class CSwapAPOMFX :
+// FlowEngine APO class - MFX
+class CFlowEngineAPOMFX :
     public CComObjectRootEx<CComMultiThreadModel>,
-    public CComCoClass<CSwapAPOMFX, &CLSID_SwapAPOMFX>,
+    public CComCoClass<CFlowEngineAPOMFX, &CLSID_FlowEngineAPOMFX>,
     public CBaseAudioProcessingObject,
     public IMMNotificationClient,
     public IAudioSystemEffects2,
     // IAudioSystemEffectsCustomFormats may be optionally supported
     // by APOs that attach directly to the connector in the DEFAULT mode streaming graph
     public IAudioSystemEffectsCustomFormats, 
-    public ISwapAPOMFX
+    public IFlowEngineAPOMFX
 {
 public:
     // constructor
-    CSwapAPOMFX()
+    CFlowEngineAPOMFX()
     :   CBaseAudioProcessingObject(sm_RegProperties)
     ,   m_hEffectsChangedEvent(NULL)
     ,   m_AudioProcessingMode(AUDIO_SIGNALPROCESSINGMODE_DEFAULT)
-    ,   m_fEnableSwapMFX(FALSE)
+    ,   m_fEnableFlowEngineMFX(FALSE)
     {
         m_pf32Coefficients = NULL;
     }
 
-    virtual ~CSwapAPOMFX();    // destructor
+    virtual ~CFlowEngineAPOMFX();    // destructor
 
-DECLARE_REGISTRY_RESOURCEID(IDR_SWAPAPOMFX)
+DECLARE_REGISTRY_RESOURCEID(IDR_FlowEngineAPOMFX)
 
-BEGIN_COM_MAP(CSwapAPOMFX)
-    COM_INTERFACE_ENTRY(ISwapAPOMFX)
+BEGIN_COM_MAP(CFlowEngineAPOMFX)
+    COM_INTERFACE_ENTRY(IFlowEngineAPOMFX)
     COM_INTERFACE_ENTRY(IAudioSystemEffects)
     COM_INTERFACE_ENTRY(IAudioSystemEffects2)
     // IAudioSystemEffectsCustomFormats may be optionally supported
@@ -135,7 +135,7 @@ public:
     STDMETHODIMP CheckCustomFormats(IAudioMediaType *pRequestedFormat);
     
 public:
-    LONG                                    m_fEnableSwapMFX;
+    LONG                                    m_fEnableFlowEngineMFX;
     GUID                                    m_AudioProcessingMode;
     CComPtr<IPropertyStore>                 m_spAPOSystemEffectsProperties;
     CComPtr<IMMDeviceEnumerator>            m_spEnumerator;
@@ -155,32 +155,32 @@ private:
 
 
 #pragma AVRT_VTABLES_BEGIN
-// Swap APO class - SFX
-class CSwapAPOSFX :
+// FlowEngine APO class - SFX
+class CFlowEngineAPOSFX :
     public CComObjectRootEx<CComMultiThreadModel>,
-    public CComCoClass<CSwapAPOSFX, &CLSID_SwapAPOSFX>,
+    public CComCoClass<CFlowEngineAPOSFX, &CLSID_FlowEngineAPOSFX>,
     public CBaseAudioProcessingObject,
     public IMMNotificationClient,
     public IAudioSystemEffects2,
-    public ISwapAPOSFX
+    public IFlowEngineAPOSFX
 {
 public:
     // constructor
-    CSwapAPOSFX()
+    CFlowEngineAPOSFX()
     :   CBaseAudioProcessingObject(sm_RegProperties)
     ,   m_hEffectsChangedEvent(NULL)
     ,   m_AudioProcessingMode(AUDIO_SIGNALPROCESSINGMODE_DEFAULT)
-    ,   m_fEnableSwapSFX(FALSE)
+    ,   m_fEnableFlowEngineSFX(FALSE)
     ,   m_fEnableDelaySFX(FALSE)
     {
     }
 
-    virtual ~CSwapAPOSFX();    // destructor
+    virtual ~CFlowEngineAPOSFX();    // destructor
 
-DECLARE_REGISTRY_RESOURCEID(IDR_SWAPAPOSFX)
+DECLARE_REGISTRY_RESOURCEID(IDR_FlowEngineAPOSFX)
 
-BEGIN_COM_MAP(CSwapAPOSFX)
-    COM_INTERFACE_ENTRY(ISwapAPOSFX)
+BEGIN_COM_MAP(CFlowEngineAPOSFX)
+    COM_INTERFACE_ENTRY(IFlowEngineAPOSFX)
     COM_INTERFACE_ENTRY(IAudioSystemEffects)
     COM_INTERFACE_ENTRY(IAudioSystemEffects2)
     COM_INTERFACE_ENTRY(IMMNotificationClient)
@@ -234,7 +234,7 @@ public:
     STDMETHODIMP OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPERTYKEY key);
 
 public:
-    LONG                                    m_fEnableSwapSFX;
+    LONG                                    m_fEnableFlowEngineSFX;
     LONG                                    m_fEnableDelaySFX;
     GUID                                    m_AudioProcessingMode;
     CComPtr<IPropertyStore>                 m_spAPOSystemEffectsProperties;
@@ -246,22 +246,22 @@ public:
 };
 #pragma AVRT_VTABLES_END
 
-OBJECT_ENTRY_AUTO(__uuidof(SwapAPOMFX), CSwapAPOMFX)
-OBJECT_ENTRY_AUTO(__uuidof(SwapAPOSFX), CSwapAPOSFX)
+OBJECT_ENTRY_AUTO(__uuidof(FlowEngineAPOMFX), CFlowEngineAPOMFX)
+OBJECT_ENTRY_AUTO(__uuidof(FlowEngineAPOSFX), CFlowEngineAPOSFX)
 
 //
-//   Declaration of the ProcessSwap routine.
+//   Declaration of the ProcessFlowEngine routine.
 //
-void ProcessSwap(
+void ProcessFlowEngine(
     FLOAT32 *pf32OutputFrames,
     const FLOAT32 *pf32InputFrames,
     UINT32   u32ValidFrameCount,
     UINT32   u32SamplesPerFrame);
 
 //
-//   Declaration of the ProcessSwapScale routine.
+//   Declaration of the ProcessFlowEngineScale routine.
 //
-void ProcessSwapScale(
+void ProcessFlowEngineScale(
     FLOAT32 *pf32OutputFrames,
     const FLOAT32 *pf32InputFrames,
     UINT32   u32ValidFrameCount,

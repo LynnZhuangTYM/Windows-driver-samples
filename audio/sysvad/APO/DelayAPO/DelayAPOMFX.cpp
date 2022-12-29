@@ -82,7 +82,7 @@ LONG GetCurrentEffectsSetting(IPropertyStore* properties, PROPERTYKEY pkeyEnable
 
     PropVariantInit(&var);
 
-    // Get the state of whether channel swap MFX is enabled or not. 
+    // Get the state of whether channel FlowEngine MFX is enabled or not. 
 
     // Check the master disable property defined by Windows
     hr = properties->GetValue(PKEY_AudioEndpoint_Disable_SysFx, &var);
@@ -722,7 +722,7 @@ HRESULT CDelayAPOMFX::OnPropertyValueChanged(LPCWSTR pwstrDeviceId, const PROPER
             LONG fOldValue;
             LONG fNewValue = true;
             
-            // Get the state of whether channel swap MFX is enabled or not
+            // Get the state of whether channel FlowEngine MFX is enabled or not
             fNewValue = GetCurrentEffectsSetting(m_spAPOSystemEffectsProperties, controls[i].key, m_AudioProcessingMode);
 
             // Delay in the new setting
