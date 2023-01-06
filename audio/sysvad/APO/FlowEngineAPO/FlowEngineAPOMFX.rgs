@@ -2,7 +2,7 @@ HKCR
 {
         NoRemove CLSID
         {
-                ForceRemove {06687E71-F043-403A-BF49-CB591BA6E103} = s 'SwapAPOMFX Class'
+                ForceRemove {06687E71-F043-403A-BF49-CB591BA6E103} = s 'FlowEngineAPOMFX Class'
                 {
                         InprocServer32 = s '%MODULE%'
                         {

@@ -27,10 +27,10 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Resource.h">
+    <ClInclude Include="FlowEngineAPO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FlowEngineAPO.h">
+    <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

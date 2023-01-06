@@ -2,8 +2,8 @@ HKCR
 {
         NoRemove AppID
         {
-                '%APPID%' = s 'SwapAPODll'
-                'SwapAPODll.DLL'
+                '%APPID%' = s 'FlowEngineAPODll'
+                'FlowEngineAPODll.DLL'
                 {
                         val AppID = s '%APPID%'
                 }

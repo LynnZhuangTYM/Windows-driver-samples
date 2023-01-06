@@ -11,6 +11,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TabletAudioSample", "TabletAudioSample", "{C06F6070-75EE-4F57-8D35-4AC2AB08D029}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "package", "Package\package.VcxProj", "{830B14D5-0E32-4F9E-AEFA-4C9F6FC13C2A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{691F1D0F-CA50-46CD-8BBA-A59E9E8EB601} = {691F1D0F-CA50-46CD-8BBA-A59E9E8EB601}
+		{33E61864-6F2C-4F9F-BE70-8F8985A4F283} = {33E61864-6F2C-4F9F-BE70-8F8985A4F283}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeywordDetectorContosoAdapter", "KeywordDetectorAdapter\KeywordDetectorContosoAdapter.vcxproj", "{E0F02048-78A4-4FE8-B863-66E6CB6A2C37}"
 EndProject

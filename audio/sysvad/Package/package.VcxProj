@@ -27,6 +27,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\APO\FlowEngineAPO\FlowEngineAPO.vcxproj">
+      <Project>{691f1d0f-ca50-46cd-8bba-a59e9e8eb601}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\KeywordDetectorAdapter\KeywordDetectorContosoAdapter.vcxproj">
       <Project>{E0F02048-78A4-4FE8-B863-66E6CB6A2C37}</Project>
     </ProjectReference>

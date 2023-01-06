@@ -18,6 +18,7 @@
 #include <float.h>
 
 #include "FlowEngineAPO.h"
+#include "FlowEngine.h"
 
 #pragma AVRT_CODE_BEGIN
 void WriteSilence(
@@ -76,39 +77,5 @@ void ProcessFlowEngine(
 
 
 #pragma AVRT_CODE_BEGIN
-void ProcessFlowEngineScale(
-    FLOAT32 *pf32OutputFrames,
-    const FLOAT32 *pf32InputFrames,
-    UINT32   u32ValidFrameCount,
-    UINT32   u32SamplesPerFrame,
-    FLOAT32  *pf32Coefficients )
-{
-    UINT32   u32SampleIndex;
-    FLOAT32  fFlowEngine32;
 
-    ASSERT_REALTIME();
-    ATLASSERT( IS_VALID_TYPED_READ_POINTER(pf32InputFrames) );
-    ATLASSERT( IS_VALID_TYPED_READ_POINTER(pf32OutputFrames) );
-
-    // loop through samples
-    while (u32ValidFrameCount--)
-    {
-        for (u32SampleIndex=0; u32SampleIndex+1<u32SamplesPerFrame; u32SampleIndex += 2)
-        {
-            // apply FlowEngine for each stereo pair and scale
-
-            // save left channel
-            fFlowEngine32 = *pf32InputFrames;
-            // left output equals right input times 1st coefficient
-            *pf32OutputFrames = *(pf32InputFrames + 1) * pf32Coefficients[u32SampleIndex];
-            pf32OutputFrames++;
-            
-            // right output equals left input times 2nd coefficient
-            *pf32OutputFrames = fFlowEngine32  * pf32Coefficients[u32SampleIndex+1];      
-            pf32OutputFrames++;
-
-            pf32InputFrames += 2;
-        }
-    }
-}
 #pragma AVRT_CODE_END

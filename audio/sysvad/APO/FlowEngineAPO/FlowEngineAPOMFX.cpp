@@ -21,6 +21,7 @@
 #include "FlowEngineAPO.h"
 #include "SysVadShared.h"
 #include <CustomPropKeys.h>
+#include "FlowEngine.h"
 
 
 
@@ -176,9 +177,7 @@ STDMETHODIMP_(void) CFlowEngineAPOMFX::APOProcess(
                 (1 < m_u32SamplesPerFrame)
             )
             {
-                ProcessFlowEngineScale(pf32InputFrames, pf32InputFrames,
-                            ppInputConnections[0]->u32ValidFrameCount,
-                            m_u32SamplesPerFrame, m_pf32Coefficients );
+                FlowEngine_ProcessInterleaveFloat(m_pEngine, pf32InputFrames, pf32OutputFrames, ppInputConnections[0]->u32ValidFrameCount);
             }
             
             // copy the memory only if there is an output connection, and input/output pointers are unequal
@@ -234,6 +233,10 @@ Exit:
     return hr;  
 }
 
+//@@ ok to define global static buffer??
+#define FLOW_MEMPOOL_SIZE 16384*1024
+static char MEMPOOL_BUF[FLOW_MEMPOOL_SIZE];
+
 //-------------------------------------------------------------------------
 // Description:
 //
@@ -263,6 +266,55 @@ STDMETHODIMP CFlowEngineAPOMFX::LockForProcess(UINT32 u32NumInputConnections,
     hr = CBaseAudioProcessingObject::LockForProcess(u32NumInputConnections,
         ppInputConnections, u32NumOutputConnections, ppOutputConnections);
     IF_FAILED_JUMP(hr, Exit);
+
+    if (!IsEqualGUID(m_AudioProcessingMode, AUDIO_SIGNALPROCESSINGMODE_RAW) && m_fEnableFlowEngineMFX)
+    {
+
+        //m_pFlowEngineMemPool.Free();
+
+        UNCOMPRESSEDAUDIOFORMAT inFormat;
+        hr = ppInputConnections[0]->pFormat->GetUncompressedAudioFormat(&inFormat);
+        if (FAILED(hr))
+        {
+            //LogF(L"Error in GetUncompressedAudioFormat in LockForProcess");
+            return hr;
+        }
+
+        unsigned maxInputFrameCount = ppInputConnections[0]->u32MaxFrameCount;
+
+        //TraceF(L"Input format in LockForProcess = { %08X, %u, %u, %u, %f, %08X, %u }",
+       //     inFormat.guidFormatType.Data1, inFormat.dwSamplesPerFrame, inFormat.dwBytesPerSampleContainer,
+        //    inFormat.dwValidBitsPerSample, inFormat.fFramesPerSecond, inFormat.dwChannelMask, maxInputFrameCount);
+
+        UNCOMPRESSEDAUDIOFORMAT outFormat;
+        hr = ppOutputConnections[0]->pFormat->GetUncompressedAudioFormat(&outFormat);
+        if (FAILED(hr))
+        {
+            //LogF(L"Error in second GetUncompressedAudioFormat in LockForProcess");
+            return hr;
+        }
+
+        unsigned maxOutputFrameCount = ppOutputConnections[0]->u32MaxFrameCount;
+
+        // TraceF(L"Output format in LockForProcess = { %08X, %u, %u, %u, %f, %08X, %u }",
+         //    outFormat.guidFormatType.Data1, outFormat.dwSamplesPerFrame, outFormat.dwBytesPerSampleContainer,
+         //    outFormat.dwValidBitsPerSample, outFormat.fFramesPerSecond, outFormat.dwChannelMask, maxOutputFrameCount);
+
+        unsigned maxFrameCount = maxInputFrameCount;
+        if (maxFrameCount == 0)
+            maxFrameCount = maxOutputFrameCount;
+
+
+        // m_pFlowEngineMemPool.Allocate(FLOW_MEMPOOL_SIZE);
+        FlowEngine_Mempool_Create(MEMPOOL_BUF, FLOW_MEMPOOL_SIZE);
+
+        const char* config_path = "E:/workspace_core/FlowEngineC/build/_OUTPUT/peq_lpf_300Hz.flw";
+
+        m_pEngine = FlowEngine_create("engine", config_path, inFormat.dwSamplesPerFrame, outFormat.dwSamplesPerFrame);
+        //sample rate = GetFramesPerSecond()* GetSamplesPerFrame()
+        FlowEngine_prepare(m_pEngine, outFormat.fFramesPerSecond, maxFrameCount);
+
+    }
     
 Exit:
     return hr;
@@ -746,11 +798,11 @@ CFlowEngineAPOMFX::~CFlowEngineAPOMFX(void)
         CloseHandle(m_hEffectsChangedEvent);
     }
 
-    // Free locked memory allocations
-    if (NULL != m_pf32Coefficients)
+
+    if (NULL != m_pEngine)
     {
-        AERT_Free(m_pf32Coefficients);
-        m_pf32Coefficients = NULL;
+        FlowEngine_destroy(m_pEngine);
+        m_pEngine = NULL;
     }
 } // ~CFlowEngineAPOMFX
 
@@ -795,7 +847,6 @@ HRESULT CFlowEngineAPOMFX::ValidateAndCacheConnectionInfo(UINT32 u32NumInputConn
     HRESULT hResult;
     CComPtr<IAudioMediaType> pFormat;
     UNCOMPRESSEDAUDIOFORMAT UncompInputFormat, UncompOutputFormat;
-    FLOAT32 f32InverseChannelCount;
 
     UNREFERENCED_PARAMETER(u32NumInputConnections);
     UNREFERENCED_PARAMETER(u32NumOutputConnections);
@@ -819,19 +870,6 @@ HRESULT CFlowEngineAPOMFX::ValidateAndCacheConnectionInfo(UINT32 u32NumInputConn
     _ASSERTE(UncompOutputFormat.fFramesPerSecond == UncompInputFormat.fFramesPerSecond);
     _ASSERTE(UncompOutputFormat. dwSamplesPerFrame == UncompInputFormat.dwSamplesPerFrame);
 
-    // Allocate some locked memory.  We will use these as scaling coefficients during APOProcess->ProcessFlowEngineScale
-    hResult = AERT_Allocate(sizeof(FLOAT32)*m_u32SamplesPerFrame, (void**)&m_pf32Coefficients);
-    IF_FAILED_JUMP(hResult, Exit);
-
-    // Set scalars to decrease volume from 1.0 to 1.0/N where N is the number of channels
-    // starting with the first channel.
-    f32InverseChannelCount = 1.0f/m_u32SamplesPerFrame;
-    for (UINT16 u16Index=0; u16Index<m_u32SamplesPerFrame; u16Index++)
-    {
-        // m_u32SamplesPerFrame will not be modified by any other entity or context
-#pragma warning(suppress:6386)
-        m_pf32Coefficients[u16Index] = 1.0f - (FLOAT32)(f32InverseChannelCount)*u16Index;
-    }
 
     
 Exit:

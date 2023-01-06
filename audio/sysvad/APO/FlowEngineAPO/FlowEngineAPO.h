@@ -16,9 +16,13 @@
 #include <commonmacros.h>
 #include <devicetopology.h>
 
+#include "FlowEngine.h"
+
 _Analysis_mode_(_Analysis_code_type_user_driver_)
 
 #define PK_EQUAL(x, y)  ((x.fmtid == y.fmtid) && (x.pid == y.pid))
+
+typedef char        CHAR8;
 
 //
 // Define a GUID identifying the type of this APO's custom effect.
@@ -53,7 +57,7 @@ public:
     ,   m_AudioProcessingMode(AUDIO_SIGNALPROCESSINGMODE_DEFAULT)
     ,   m_fEnableFlowEngineMFX(FALSE)
     {
-        m_pf32Coefficients = NULL;
+        m_pEngine = NULL;
     }
 
     virtual ~CFlowEngineAPOMFX();    // destructor
@@ -142,7 +146,7 @@ public:
     static const CRegAPOProperties<1>       sm_RegProperties;   // registration properties
 
     // Locked memory
-    FLOAT32                                 *m_pf32Coefficients;
+    FlowEngine                              *m_pEngine;
 
 private:
     CCriticalSection                        m_EffectsLock;
@@ -171,7 +175,6 @@ public:
     ,   m_hEffectsChangedEvent(NULL)
     ,   m_AudioProcessingMode(AUDIO_SIGNALPROCESSINGMODE_DEFAULT)
     ,   m_fEnableFlowEngineSFX(FALSE)
-    ,   m_fEnableDelaySFX(FALSE)
     {
     }
 
@@ -235,11 +238,14 @@ public:
 
 public:
     LONG                                    m_fEnableFlowEngineSFX;
-    LONG                                    m_fEnableDelaySFX;
     GUID                                    m_AudioProcessingMode;
     CComPtr<IPropertyStore>                 m_spAPOSystemEffectsProperties;
     CComPtr<IMMDeviceEnumerator>            m_spEnumerator;
     static const CRegAPOProperties<1>       sm_RegProperties;   // registration properties
+
+    CComHeapPtr<CHAR8>                      m_pFlowEngineMemPool;
+
+    FlowEngine                              * m_pEngine;
 
     CCriticalSection                        m_EffectsLock;
     HANDLE                                  m_hEffectsChangedEvent;
@@ -258,15 +264,6 @@ void ProcessFlowEngine(
     UINT32   u32ValidFrameCount,
     UINT32   u32SamplesPerFrame);
 
-//
-//   Declaration of the ProcessFlowEngineScale routine.
-//
-void ProcessFlowEngineScale(
-    FLOAT32 *pf32OutputFrames,
-    const FLOAT32 *pf32InputFrames,
-    UINT32   u32ValidFrameCount,
-    UINT32   u32SamplesPerFrame,
-    FLOAT32 *pf32Coefficients );
 
 //
 //   Convenience methods

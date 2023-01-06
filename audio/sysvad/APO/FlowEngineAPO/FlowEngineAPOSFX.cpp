@@ -21,6 +21,7 @@
 #include "FlowEngineAPO.h"
 #include <devicetopology.h>
 #include <CustomPropKeys.h>
+#include "FlowEngine.h"
 
 
 // Static declaration of the APO_REG_PROPERTIES structure
@@ -124,9 +125,10 @@ STDMETHODIMP_(void) CFlowEngineAPOSFX::APOProcess(
                 m_fEnableFlowEngineSFX
             )
             {
-                ProcessFlowEngine(pf32InputFrames, pf32InputFrames,
-                            ppInputConnections[0]->u32ValidFrameCount,
-                            m_u32SamplesPerFrame);
+               // ProcessFlowEngine(pf32InputFrames, pf32InputFrames,
+              //              ppInputConnections[0]->u32ValidFrameCount,
+              //              m_u32SamplesPerFrame);
+                FlowEngine_ProcessInterleaveFloat(m_pEngine, pf32InputFrames, pf32OutputFrames, ppInputConnections[0]->u32ValidFrameCount);
             }
 
             // copy the memory only if there is an output connection, and input/output pointers are unequal
@@ -182,6 +184,10 @@ Exit:
     return hr;  
 }
 
+//@@ ok to define global static buffer??
+#define FLOW_MEMPOOL_SIZE 16384*1024
+static char MEMPOOL_BUF[FLOW_MEMPOOL_SIZE];
+
 //-------------------------------------------------------------------------
 // Description:
 //
@@ -211,6 +217,55 @@ STDMETHODIMP CFlowEngineAPOSFX::LockForProcess(UINT32 u32NumInputConnections,
     hr = CBaseAudioProcessingObject::LockForProcess(u32NumInputConnections,
         ppInputConnections, u32NumOutputConnections, ppOutputConnections);
     IF_FAILED_JUMP(hr, Exit);
+
+    if (!IsEqualGUID(m_AudioProcessingMode, AUDIO_SIGNALPROCESSINGMODE_RAW) && m_fEnableFlowEngineSFX)
+    {
+
+        //m_pFlowEngineMemPool.Free();
+
+        UNCOMPRESSEDAUDIOFORMAT inFormat;
+        hr = ppInputConnections[0]->pFormat->GetUncompressedAudioFormat(&inFormat);
+        if (FAILED(hr))
+        {
+            //LogF(L"Error in GetUncompressedAudioFormat in LockForProcess");
+            return hr;
+        }
+
+        unsigned maxInputFrameCount = ppInputConnections[0]->u32MaxFrameCount;
+
+        //TraceF(L"Input format in LockForProcess = { %08X, %u, %u, %u, %f, %08X, %u }",
+       //     inFormat.guidFormatType.Data1, inFormat.dwSamplesPerFrame, inFormat.dwBytesPerSampleContainer,
+        //    inFormat.dwValidBitsPerSample, inFormat.fFramesPerSecond, inFormat.dwChannelMask, maxInputFrameCount);
+
+        UNCOMPRESSEDAUDIOFORMAT outFormat;
+        hr = ppOutputConnections[0]->pFormat->GetUncompressedAudioFormat(&outFormat);
+        if (FAILED(hr))
+        {
+            //LogF(L"Error in second GetUncompressedAudioFormat in LockForProcess");
+            return hr;
+        }
+
+        unsigned maxOutputFrameCount = ppOutputConnections[0]->u32MaxFrameCount;
+
+       // TraceF(L"Output format in LockForProcess = { %08X, %u, %u, %u, %f, %08X, %u }",
+        //    outFormat.guidFormatType.Data1, outFormat.dwSamplesPerFrame, outFormat.dwBytesPerSampleContainer,
+        //    outFormat.dwValidBitsPerSample, outFormat.fFramesPerSecond, outFormat.dwChannelMask, maxOutputFrameCount);
+
+        unsigned maxFrameCount = maxInputFrameCount;
+        if (maxFrameCount == 0)
+            maxFrameCount = maxOutputFrameCount;
+
+
+       // m_pFlowEngineMemPool.Allocate(FLOW_MEMPOOL_SIZE);
+        FlowEngine_Mempool_Create(MEMPOOL_BUF, FLOW_MEMPOOL_SIZE);
+
+        const char* config_path = "E:/workspace_core/FlowEngineC/build/_OUTPUT/peq_lpf_300Hz.flw";
+
+        m_pEngine = FlowEngine_create("engine", config_path, inFormat.dwSamplesPerFrame, outFormat.dwSamplesPerFrame);
+        //sample rate = GetFramesPerSecond()* GetSamplesPerFrame()
+        FlowEngine_prepare(m_pEngine, outFormat.fFramesPerSecond, maxFrameCount);
+
+    }
     
 Exit:
     return hr;
@@ -619,5 +674,12 @@ CFlowEngineAPOSFX::~CFlowEngineAPOSFX(void)
     if (m_hEffectsChangedEvent != NULL)
     {
         CloseHandle(m_hEffectsChangedEvent);
+    }
+
+    // Free locked memory allocations
+    if (NULL != m_pEngine)
+    {
+        FlowEngine_destroy(m_pEngine);
+        m_pEngine = NULL;
     }
 } // ~CFlowEngineAPOSFX
